@@ -1,114 +1,107 @@
 import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.*;
-
-class TrainConsistUC9 {
-import org.junit.jupiter.api.Test;
 import java.util.*;
 import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-    class TrainConsistUC9Test {
+class TrainConsistUC10Test {
 
-        private List<Bogie> getSampleBogies() {
-            List<Bogie> bogies = new ArrayList<>();
-            bogies.add(new Bogie("Sleeper", 72));
-            bogies.add(new Bogie("AC Chair", 60));
-            bogies.add(new Bogie("Sleeper", 72));
-            bogies.add(new Bogie("First Class", 24));
-            bogies.add(new Bogie("AC Chair", 60));
-            return bogies;
-        }
-
-        @Test
-        void testGrouping_BogiesGroupedByType() {
-
-            Map<String, List<Bogie>> result = getSampleBogies().stream()
-                    .collect(Collectors.groupingBy(b -> b.type));
-
-            assertTrue(result.containsKey("Sleeper"));
-            assertTrue(result.containsKey("AC Chair"));
-        }
-
-        @Test
-        void testGrouping_MultipleBogiesInSameGroup() {
-
-            Map<String, List<Bogie>> result = getSampleBogies().stream()
-                    .collect(Collectors.groupingBy(b -> b.type));
-
-            assertEquals(2, result.get("Sleeper").size());
-        }
-
-        @Test
-        void testGrouping_DifferentBogieTypes() {
-
-            Map<String, List<Bogie>> result = getSampleBogies().stream()
-                    .collect(Collectors.groupingBy(b -> b.type));
-
-            assertEquals(3, result.keySet().size());
-        }
-
-        @Test
-        void testGrouping_EmptyBogieList() {
-
-            List<Bogie> bogies = new ArrayList<>();
-
-            Map<String, List<Bogie>> result = bogies.stream()
-                    .collect(Collectors.groupingBy(b -> b.type));
-
-            assertTrue(result.isEmpty());
-        }
-
-        @Test
-        void testGrouping_SingleBogieCategory() {
-
-            List<Bogie> bogies = Arrays.asList(
-                    new Bogie("Sleeper", 72),
-                    new Bogie("Sleeper", 72)
-            );
-
-            Map<String, List<Bogie>> result = bogies.stream()
-                    .collect(Collectors.groupingBy(b -> b.type));
-
-            assertEquals(1, result.keySet().size());
-            assertEquals(2, result.get("Sleeper").size());
-        }
-
-        @Test
-        void testGrouping_MapContainsCorrectKeys() {
-
-            Map<String, List<Bogie>> result = getSampleBogies().stream()
-                    .collect(Collectors.groupingBy(b -> b.type));
-
-            assertTrue(result.containsKey("Sleeper"));
-            assertTrue(result.containsKey("AC Chair"));
-            assertTrue(result.containsKey("First Class"));
-        }
-
-        @Test
-        void testGrouping_GroupSizeValidation() {
-
-            Map<String, List<Bogie>> result = getSampleBogies().stream()
-                    .collect(Collectors.groupingBy(b -> b.type));
-
-            assertEquals(2, result.get("Sleeper").size());
-            assertEquals(2, result.get("AC Chair").size());
-            assertEquals(1, result.get("First Class").size());
-        }
-
-        @Test
-        void testGrouping_OriginalListUnchanged() {
-
-            List<Bogie> bogies = getSampleBogies();
-            int originalSize = bogies.size();
-
-            Map<String, List<Bogie>> result = bogies.stream()
-                    .collect(Collectors.groupingBy(b -> b.type));
-
-            assertEquals(originalSize, bogies.size());
-            assertNotNull(result);
-        }
+    private List<Bogie> getSampleBogies() {
+        List<Bogie> bogies = new ArrayList<>();
+        bogies.add(new Bogie("Sleeper", 72));
+        bogies.add(new Bogie("AC Chair", 60));
+        bogies.add(new Bogie("First Class", 24));
+        return bogies;
     }
 
+    @Test
+    void testReduce_TotalSeatCalculation() {
+
+        int total = getSampleBogies().stream()
+                .map(b -> b.capacity)
+                .reduce(0, Integer::sum);
+
+        assertEquals(156, total);
+    }
+
+    @Test
+    void testReduce_MultipleBogiesAggregation() {
+
+        int total = getSampleBogies().stream()
+                .map(b -> b.capacity)
+                .reduce(0, Integer::sum);
+
+        assertTrue(total > 0);
+        assertEquals(72 + 60 + 24, total);
+    }
+
+    @Test
+    void testReduce_SingleBogieCapacity() {
+
+        List<Bogie> bogies = Arrays.asList(
+                new Bogie("Sleeper", 72)
+        );
+
+        int total = bogies.stream()
+                .map(b -> b.capacity)
+                .reduce(0, Integer::sum);
+
+        assertEquals(72, total);
+    }
+
+    @Test
+    void testReduce_EmptyBogieList() {
+
+        List<Bogie> bogies = new ArrayList<>();
+
+        int total = bogies.stream()
+                .map(b -> b.capacity)
+                .reduce(0, Integer::sum);
+
+        assertEquals(0, total);
+    }
+
+    @Test
+    void testReduce_CorrectCapacityExtraction() {
+
+        List<Bogie> bogies = getSampleBogies();
+
+        List<Integer> capacities = bogies.stream()
+                .map(b -> b.capacity)
+                .collect(Collectors.toList());
+
+        assertTrue(capacities.contains(72));
+        assertTrue(capacities.contains(60));
+        assertTrue(capacities.contains(24));
+    }
+
+    @Test
+    void testReduce_AllBogiesIncluded() {
+
+        List<Bogie> bogies = getSampleBogies();
+
+        int total = bogies.stream()
+                .map(b -> b.capacity)
+                .reduce(0, Integer::sum);
+
+        int expected = bogies.get(0).capacity +
+                bogies.get(1).capacity +
+                bogies.get(2).capacity;
+
+        assertEquals(expected, total);
+    }
+
+    @Test
+    void testReduce_OriginalListUnchanged() {
+
+        List<Bogie> bogies = getSampleBogies();
+        int originalSize = bogies.size();
+
+        int total = bogies.stream()
+                .map(b -> b.capacity)
+                .reduce(0, Integer::sum);
+
+        assertEquals(originalSize, bogies.size());
+        assertTrue(total > 0);
+    }
 }
